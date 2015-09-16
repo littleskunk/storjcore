@@ -59,6 +59,8 @@ def verify_headers(btctxstore, headers, timeout_sec,
         storjcore.auth.AuthError: if date or signature is invalid
         storjcore.sanitize.ValidationError: if input was invalid
     """
+    #save server time to prevent timeout in case of heavy workload
+    serverdate = datetime.now()
 
     # sanitize input
     btctxstore = sanitize.is_btctxstore(btctxstore)
@@ -72,7 +74,7 @@ def verify_headers(btctxstore, headers, timeout_sec,
     # verify date
     clientdate = datetime.fromtimestamp(mktime_tz(parsedate_tz(date)))
     timeout = timedelta(seconds=timeout_sec)
-    delta = abs(datetime.now() - clientdate)
+    delta = abs(serverdate - clientdate)
     if delta >= timeout:
         msg = "Invalid header date {0} >= {1}!".format(delta, timeout)
         raise AuthError(msg)
